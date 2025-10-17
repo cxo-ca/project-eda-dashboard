@@ -3,3 +3,8 @@ https://sites.google.com/view/cxo-ca  (또는 추후 Streamlit 주소)
 data-analysis, streamlit, python, dashboard
 
 EDA: Public data EDA → peak commute visualization, 3 key metrics
+
+## 실행 방법
+```bash
+pip install -r requirements.txt
+streamlit run app/app.py

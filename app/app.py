@@ -7,7 +7,7 @@ if file:
             df = pd.read_excel(file)
         else:
             # CSV: 인코딩 자동 재시도 (utf-8 → cp949 → euc-kr)
-            encodings = ["utf-8", "cp949", "euc-kr"]
+            encodings = ["utf-8-sig", "utf-8", "cp949", "euc-kr"]
             last_err = None
             for enc in encodings:
                 try:
@@ -19,13 +19,15 @@ if file:
                     last_err = e
                     continue
             else:
-                raise last_err  # 모두 실패하면 에러로 처리
+                # 전부 실패하면 안전하게 깨진 문자 무시해서라도 로드
+                file.seek(0)
+                df = pd.read_csv(file, encoding="cp949", errors="ignore")
+                st.warning("인코딩을 정확히 감지하지 못해 일부 문자를 건너뛰었습니다.")
 
     except Exception as e:
         st.error(f"파일을 읽는 중 오류가 발생했습니다: {e}")
         st.stop()
 
-    # 이하 기존 로직 유지
     st.write("행/열:", df.shape)
     st.dataframe(df.head())
     numeric = df.select_dtypes("number")

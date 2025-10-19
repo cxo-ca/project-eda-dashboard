@@ -1,24 +1,33 @@
-import streamlit as st
-import pandas as pd
-
-st.title("공개데이터 EDA 대시보드 (초안)")
-st.write("CSV/XLSX를 업로드하면 기본 통계/차트를 보여줍니다.")
-
 file = st.file_uploader("CSV 또는 XLSX 업로드", type=["csv", "xlsx"])
 if file:
     name = file.name.lower()
     try:
         if name.endswith(".xlsx"):
-            df = pd.read_excel(file)  # openpyxl 필요
+            # 엑셀은 인코딩 이슈 없음 (openpyxl 필요)
+            df = pd.read_excel(file)
         else:
-            df = pd.read_csv(file)
+            # CSV: 인코딩 자동 재시도 (utf-8 → cp949 → euc-kr)
+            encodings = ["utf-8", "cp949", "euc-kr"]
+            last_err = None
+            for enc in encodings:
+                try:
+                    file.seek(0)              # 재시도 전에 파일 포인터 리셋
+                    df = pd.read_csv(file, encoding=enc)
+                    st.caption(f"인코딩 감지: {enc}")
+                    break
+                except UnicodeDecodeError as e:
+                    last_err = e
+                    continue
+            else:
+                raise last_err  # 모두 실패하면 에러로 처리
+
     except Exception as e:
         st.error(f"파일을 읽는 중 오류가 발생했습니다: {e}")
         st.stop()
 
+    # 이하 기존 로직 유지
     st.write("행/열:", df.shape)
     st.dataframe(df.head())
-
     numeric = df.select_dtypes("number")
     if not numeric.empty:
         st.line_chart(numeric)

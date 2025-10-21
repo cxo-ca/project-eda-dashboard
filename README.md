@@ -18,3 +18,6 @@ EDA: Public data EDA → peak commute visualization, 3 key metrics
 ```bash
 pip install -r requirements.txt
 streamlit run app/app.py
+
+## 결과
+- CSV/XLSX 업로드 → 자동 인코딩 감지(utf-8/cp949 등), 핵심 지표/차트 **즉시 표시**

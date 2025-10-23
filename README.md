@@ -1,3 +1,6 @@
+**배포 URL:** https://project-eda-dashboard-mdymcubfvmcmtygcqisq98.streamlit.app/  
+**로컬 테스트 DB 경로:** `data/app.db`  (EDA 레포 내부 파일)
+
 👉 [실행하기(배포)](https://project-eda-dashboard-mdymcubfvmcmtygcqisq98.streamlit.app/)
 ![대시보드 스크린샷](app/screenshot.png)
 

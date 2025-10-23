@@ -1,35 +1,27 @@
+# 서울 출퇴근 EDA 대시보드
+
 **배포 URL:** https://project-eda-dashboard-mdymcubfvmcmtygcqisq98.streamlit.app/  
-**로컬 테스트 DB 경로:** `data/app.db`  (EDA 레포 내부 파일)
+**로컬 테스트 DB 경로:** `data/app.db`  (이 레포 내부 파일)
 
-👉 [실행하기(배포)](https://project-eda-dashboard-mdymcubfvmcmtygcqisq98.streamlit.app/)
-![대시보드 스크린샷](app/screenshot.png)
+> CSV/XLSX 업로드 미리보기 + SQLite에서 최근 **AM(07–09) / PM(17–19)** 평균속도 카드/차트 표시
 
-# 공개데이터 EDA 대시보드
-👉 [실행하기(배포)](https://project-eda-dashboard-mdymcubfvmcmtygcqisq98.streamlit.app/) · [프로필](https://github.com/cxo-ca)
-
-![Python](https://img.shields.io/badge/Python-3.10+-informational?logo=python)
-![Streamlit](https://img.shields.io/badge/Streamlit-app-lightgrey)
-![Pandas](https://img.shields.io/badge/Pandas-EDA-blue)
-
-
-공개데이터 EDA → 출퇴근 피크 시각화, 핵심 지표 3개 정의
-data-analysis, streamlit, python, dashboard
-
-EDA: Public data EDA → peak commute visualization, 3 key metrics
-
-## 실행 방법
+## 빠른 실행
 ```bash
 pip install -r requirements.txt
 streamlit run app/app.py
 
-## 결과
-- CSV/XLSX 업로드 → 자동 인코딩 감지(utf-8/cp949 등), 핵심 지표/차트 **즉시 표시**
+사용법
+① 파일 업로드: CSV/XLSX → 자동 인코딩 감지(utf-8/cp949 등), 기본 통계/차트 표시
+② DB 불러오기: 입력칸에 data/app.db 두고 DB 불러오기 클릭
 
-## 데이터 출처
-- 도로 소통 속도/혼잡: 서울시 교통 관련 공공데이터(Open API, T-DATA/TOPIS 계열).
-- 본 프로젝트의 AM(07–09)/PM(17–19) 지표는 시간대 평균 속도를 이용합니다.
-- 속도(km/h)가 **낮을수록 정체가 심함**을 의미합니다.
+스키마
+logs_road(
+  date  TEXT    -- 'YYYYMMDD'
+  hour  INTEGER -- 0~23
+  speed REAL    -- km/h (낮을수록 혼잡)
+)
 
-## 동작 개요
-- ETL(`project-etl-sql`): 매일 도로 속도 데이터를 수집 → `data/raw/road_YYYYMMDD.csv` 저장 → `data/app.db`의 `logs_road` 테이블로 누적 적재.
-- EDA(`project-eda-dashboard`): 상단 “DB 불러오기”에서 `data/app.db` 경로 입력 → 최근 n일 AM/PM 평균속도 카드/차트 표시.
+트러블슈팅
+unable to open database file → 경로/부모폴더 확인, data/app.db 권장
+no such table: logs_road → ETL로 적재 또는 logs(timestamp,value)가 있으면 앱이 자동 변환
+데이터 없음 → 조회 일수 늘리기(예: 30), AM/PM 시간대 데이터 포함 확인

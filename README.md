@@ -1,5 +1,11 @@
 # 서울 출퇴근 EDA 대시보드
 
+[![Python](https://img.shields.io/badge/Python-3.x-informational?logo=python)]()
+[![Streamlit](https://img.shields.io/badge/Streamlit-app-lightgrey?logo=streamlit)]()
+[![SQLite](https://img.shields.io/badge/SQLite-db-blue?logo=sqlite)]()
+[![Last Commit](https://img.shields.io/github/last-commit/cxo-ca/project-eda-dashboard)]()
+[![License](https://img.shields.io/badge/license-MIT-green)]()
+
 **배포 URL:** https://project-eda-dashboard-mdymcubfvmcmtygcqisq98.streamlit.app/  
 **로컬 테스트 DB 경로:** `data/app.db`  (이 레포 내부 파일)
 

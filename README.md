@@ -4,6 +4,8 @@
 [![Streamlit](https://img.shields.io/badge/Streamlit-app-lightgrey?logo=streamlit)]()
 [![SQLite](https://img.shields.io/badge/SQLite-db-blue?logo=sqlite)]()
 [![Last Commit](https://img.shields.io/github/last-commit/cxo-ca/project-eda-dashboard)]()
+![Issues](https://img.shields.io/github/issues/cxo-ca/project-eda-dashboard)
+![Stars](https://img.shields.io/github/stars/cxo-ca/project-eda-dashboard)
 [![License](https://img.shields.io/badge/license-MIT-green)]()
 
 **배포 URL:** https://project-eda-dashboard-mdymcubfvmcmtygcqisq98.streamlit.app/  

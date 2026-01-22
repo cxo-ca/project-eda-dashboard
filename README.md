@@ -40,7 +40,9 @@ python -m streamlit run app/app.py
 - CSV/XLSX 업로드 기반 EDA(기본 통계/차트) 또는 DB 기반 조회
 
 ### Screenshot
-(여기에 기존 README의 스크린샷 1~2개를 넣으세요)
+<img width="940" height="383" alt="image" src="https://github.com/user-attachments/assets/d6750d4f-e6dc-4be2-93af-d24b34be38b6" />
+<img width="940" height="295" alt="image" src="https://github.com/user-attachments/assets/9403d345-1d3d-4bfd-b45e-816ee1629d9e" />
+<img width="940" height="264" alt="image" src="https://github.com/user-attachments/assets/45284e06-16f0-4049-b742-7bdc9070e66c" />
 
 ## 사용법
 1. 파일 업로드

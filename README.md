@@ -59,9 +59,9 @@ logs_road(
 ```
 
 ### 트러블슈팅
-- unable to open database file
+- unable to open database file  
 경로/부모폴더 확인, data/app.db 권장
-- no such table: logs_road
+- no such table: logs_road  
 ETL로 적재하거나, logs(timestamp,value)가 있으면 앱이 자동 변환되는지 확인
-- 데이터 없음
+- 데이터 없음  
 조회 일수 늘리기(예: 30), AM/PM 시간대 데이터 포함 여부 확인

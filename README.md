@@ -58,11 +58,11 @@ logs_road(
 )
 ```
 
-### 트러블슈팅
+## 트러블슈팅
 - unable to open database file  
 경로/부모폴더 확인, data/app.db 권장
 - no such table: logs_road  
 ETL로 적재가 안 됐거나 다른 DB를 보고 있는 상태입니다(경로 통일)
 
-### About
+## About
 목적: 공개데이터 기반 EDA + 지표 정의(AM/PM 평균속도) + 대시보드 구현

@@ -1,4 +1,5 @@
 # app/app.py
+import os
 import streamlit as st
 import pandas as pd
 import sqlite3
@@ -78,11 +79,13 @@ st.caption("예상 스키마: logs_road(date TEXT 'YYYYMMDD', hour INT 0-23, spe
 
 colA, colB = st.columns([2, 1])
 with colA:
-    db_path = st.text_input("SQLite DB 경로", "data/app.db")
+    default_db_path = os.getenv('APP_DB_PATH', os.path.join('.', 'data', 'app.db'))
+    db_path = st.text_input('SQLite DB 경로', default_db_path)
 with colB:
     days = st.number_input("조회 일수(최근 n일)", min_value=1, max_value=30, value=7, step=1)
 
 load_btn = st.button("DB 불러오기")
+st.caption(f"Using DB: {db_path}")
 
 if load_btn:
     try:

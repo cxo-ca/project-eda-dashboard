@@ -1,8 +1,61 @@
 # app/app.py
 import os
-import streamlit as st
-import pandas as pd
 import sqlite3
+from pathlib import Path
+
+import pandas as pd
+import streamlit as st
+
+
+def ensure_demo_db(db_path: str) -> None:
+    """
+    Streamlit Cloud 배포 환경에서 ./data/app.db 파일이 없을 경우,
+    포트폴리오 시연용 logs_road 샘플 테이블을 자동 생성합니다.
+    """
+    db_file = Path(db_path)
+    db_file.parent.mkdir(parents=True, exist_ok=True)
+
+    with sqlite3.connect(db_file) as conn:
+        table_check = pd.read_sql_query(
+            """
+            SELECT name
+            FROM sqlite_master
+            WHERE type = 'table'
+              AND name = 'logs_road'
+            """,
+            conn,
+        )
+
+        if not table_check.empty:
+            return
+
+        today = pd.Timestamp.today().normalize()
+        rows = []
+
+        for i in range(14):
+            date = (today - pd.Timedelta(days=13 - i)).strftime("%Y%m%d")
+
+            # 출근 시간대 샘플 데이터
+            rows.append(
+                {
+                    "date": date,
+                    "hour": 8,
+                    "speed": 28.0 + (i % 4) * 0.7,
+                }
+            )
+
+            # 퇴근 시간대 샘플 데이터
+            rows.append(
+                {
+                    "date": date,
+                    "hour": 18,
+                    "speed": 22.0 + (i % 5) * 0.6,
+                }
+            )
+
+        demo_df = pd.DataFrame(rows)
+        demo_df.to_sql("logs_road", conn, if_exists="replace", index=False)
+
 
 st.set_page_config(page_title="서울 출퇴근 EDA", layout="wide")
 st.title("공개데이터 EDA 대시보드 (서울 출퇴근)")
@@ -28,7 +81,7 @@ if file:
         else:
             if force_cp949:
                 file.seek(0)
-                df = pd.read_csv(file, encoding="cp949", errors="ignore")
+                df = pd.read_csv(file, encoding="cp949", encoding_errors="ignore")
                 st.caption("강제 인코딩: cp949 (일부 문자를 무시할 수 있음)")
             else:
                 # CSV: 인코딩 자동 재시도 (utf-8-sig → utf-8 → cp949 → euc-kr)
@@ -43,7 +96,7 @@ if file:
                         continue
                 else:
                     file.seek(0)
-                    df = pd.read_csv(file, encoding="cp949", errors="ignore")
+                    df = pd.read_csv(file, encoding="cp949", encoding_errors="ignore")
                     st.warning("정확한 인코딩 감지 실패 → 일부 문자를 건너뛰어 읽었습니다.")
     except Exception as e:
         st.error(f"파일 읽기 오류: {e}")
@@ -79,16 +132,19 @@ st.caption("예상 스키마: logs_road(date TEXT 'YYYYMMDD', hour INT 0-23, spe
 
 colA, colB = st.columns([2, 1])
 with colA:
-    default_db_path = os.getenv('APP_DB_PATH', os.path.join('.', 'data', 'app.db'))
-    db_path = st.text_input('SQLite DB 경로', default_db_path)
+    default_db_path = os.getenv("APP_DB_PATH", os.path.join(".", "data", "app.db"))
+    db_path = st.text_input("SQLite DB 경로", default_db_path)
 with colB:
     days = st.number_input("조회 일수(최근 n일)", min_value=1, max_value=30, value=7, step=1)
 
 load_btn = st.button("DB 불러오기")
 st.caption(f"Using DB: {db_path}")
+st.caption("DB 파일이 없으면 포트폴리오 시연용 샘플 DB를 자동 생성합니다.")
 
 if load_btn:
     try:
+        ensure_demo_db(db_path)
+
         with sqlite3.connect(db_path) as conn:
             # 최근 n일 AM/PM 평균속도 (낮을수록 정체 심함)
             q = f"""
@@ -110,15 +166,19 @@ if load_btn:
             """
             ampm = pd.read_sql_query(q, conn)
 
-            meta = pd.read_sql_query("""
-              SELECT MAX(date) AS latest_date, COUNT(*) AS total_rows
-              FROM logs_road
-            """, conn)
+            meta = pd.read_sql_query(
+                """
+                SELECT MAX(date) AS latest_date, COUNT(*) AS total_rows
+                FROM logs_road
+                """,
+                conn,
+            )
 
         # 메트릭 카드
         c1, c2, c3 = st.columns(3)
         latest = meta.iloc[0]["latest_date"] if not meta.empty else None
         total = int(meta.iloc[0]["total_rows"]) if not meta.empty else 0
+
         c1.metric("최근 적재일", latest if pd.notna(latest) else "-")
         c2.metric("누적 행수", f"{total:,}")
 
@@ -126,9 +186,14 @@ if load_btn:
             d = ampm.set_index("band")["avg_speed"].to_dict()
             am = d.get("AM", "-")
             pm = d.get("PM", "-")
+
             c3.metric("평균속도 (km/h)", f"AM: {am} / PM: {pm}")
+
             st.subheader("AM/PM 평균속도 막대차트")
             st.bar_chart(ampm.set_index("band")["avg_speed"])
+
+            st.subheader("조회 결과")
+            st.dataframe(ampm)
         else:
             c3.metric("평균속도 (km/h)", "-")
             st.info("조회 구간에 해당하는 데이터가 없습니다. (테이블/날짜 범위 확인)")
@@ -143,10 +208,14 @@ st.divider()
 # 3) 안내/출처
 # =========================
 with st.expander("출처 및 동작 개요 보기"):
-    st.markdown("""
+    st.markdown(
+        """
 - **데이터 출처(도로 소통 속도/혼잡)**: 서울시 교통 공공데이터(T-DATA/TOPIS 계열).
-- **지표 해석**: 속도(km/h)가 **낮을수록** 정체가 심함.  
-- **파이프라인**:  
-  - ETL 레포(`project-etl-sql`)가 매일 데이터 수집 → `data/raw/road_YYYYMMDD.csv` 저장 → `data/app.db`의 `logs_road`로 누적 적재  
+- **지표 해석**: 속도(km/h)가 **낮을수록** 정체가 심함.
+- **파이프라인**:
+  - ETL 레포(`project-etl-sql`)가 매일 데이터 수집 → `data/raw/road_YYYYMMDD.csv` 저장 → `data/app.db`의 `logs_road`로 누적 적재
   - 본 대시보드에서 `DB 불러오기`로 최근 n일 **AM(07–09)/PM(17–19)** 평균속도 카드/차트 표시
-""")
+- **시연 모드**:
+  - 배포 환경에서 DB 파일이 없으면 샘플 `logs_road` 테이블을 자동 생성해 KPI와 차트를 확인할 수 있습니다.
+"""
+    )
